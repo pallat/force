@@ -22,6 +22,40 @@ func Decrypt(x string) string {
 	return ""
 }
 
+var seeding = "310978029187439287498574938709479208749857498723895"
+
+type seed []byte
+
+func (ss *seed) rid(b byte) {
+	s := *ss
+	defer func() { *ss = s }()
+	for i := range []byte(s) {
+		if b == s[i] {
+			if i == 0 {
+				if len(s) == 0 {
+					s = make([]byte, 0)
+					return
+				}
+				s = s[1:]
+				return
+			}
+			if x := len(s) - 1; i == x {
+				s = s[:x]
+				return
+			}
+			s = append(s[:i], s[i+1:]...)
+		}
+	}
+}
+
+func Validate(s string) bool {
+	t := seed(seeding)
+	for _, b := range []byte(s) {
+		t.rid(b)
+	}
+	return len(t) == 0
+}
+
 func hashing(b byte) string {
 	h := sha256.New()
 	h.Write([]byte{b})
